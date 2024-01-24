@@ -36,7 +36,7 @@ int AnimatedGIF::open(uint8_t *pData, int iDataSize, GIF_DRAW_CALLBACK *pfnDraw)
     _gif->pfnClose = NULL;
     _gif->GIFFile.iSize = iDataSize;
     _gif->GIFFile.pData = pData;
-    return GIFInit(_gif);
+    return GIFInit(_gif.get());
 } /* open() */
 
 int AnimatedGIF::openFLASH(uint8_t *pData, int iDataSize, GIF_DRAW_CALLBACK *pfnDraw)
@@ -49,7 +49,7 @@ int AnimatedGIF::openFLASH(uint8_t *pData, int iDataSize, GIF_DRAW_CALLBACK *pfn
     _gif->pfnClose = NULL;
     _gif->GIFFile.iSize = iDataSize;
     _gif->GIFFile.pData = pData;
-    return GIFInit(_gif);
+    return GIFInit(_gif.get());
 } /* openFLASH() */
 
 //
@@ -133,7 +133,7 @@ int AnimatedGIF::getLoopCount()
 
 int AnimatedGIF::getInfo(GIFINFO *pInfo)
 {
-   return GIF_getInfo(_gif, pInfo);
+   return GIF_getInfo(_gif.get(), pInfo);
 } /* getInfo() */
 
 int AnimatedGIF::getLastError()
@@ -157,7 +157,7 @@ int AnimatedGIF::open(const char *szFilename, GIF_OPEN_CALLBACK *pfnOpen, GIF_CL
        _gif->iError = GIF_FILE_NOT_OPEN;
        return 0;
     }
-    return GIFInit(_gif);
+    return GIFInit(_gif.get());
 
 } /* open() */
 
@@ -166,7 +166,6 @@ void AnimatedGIF::close()
     if (_gif->pfnClose)
         (*_gif->pfnClose)(_gif->GIFFile.fHandle);
 
-    heap_caps_free(_gif);
 } /* close() */
 
 void AnimatedGIF::reset()
@@ -178,10 +177,12 @@ void AnimatedGIF::reset()
 void AnimatedGIF::begin(unsigned char ucPaletteType)
 {
     //_gif = new GIFIMAGE();
-    _gif = (GIFIMAGE*) heap_caps_malloc(sizeof(GIFIMAGE), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    if(_gif == nullptr)
-	    _gif = (GIFIMAGE*) heap_caps_malloc(sizeof(GIFIMAGE), MALLOC_CAP_8BIT);
-    memset(_gif, 0, sizeof(GIFIMAGE));
+    _gif.reset();
+    GIFIMAGE* __gif = (GIFIMAGE*) heap_caps_malloc(sizeof(GIFIMAGE), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if(__gif == nullptr)
+	    __gif = (GIFIMAGE*) heap_caps_malloc(sizeof(GIFIMAGE), MALLOC_CAP_8BIT);
+    memset(__gif, 0, sizeof(GIFIMAGE));
+    _gif = std::shared_ptr<GIFIMAGE>(__gif);
     if (ucPaletteType != GIF_PALETTE_RGB565_LE && ucPaletteType != GIF_PALETTE_RGB565_BE && ucPaletteType != GIF_PALETTE_RGB888)
         _gif->iError = GIF_INVALID_PARAMETER;
     _gif->ucPaletteType = ucPaletteType;
@@ -205,12 +206,12 @@ long lTime = millis();
     {
         (*_gif->pfnSeek)(&_gif->GIFFile, 0); // seek to start
     }
-    if (GIFParseInfo(_gif, 0))
+    if (GIFParseInfo(_gif.get(), 0))
     {
         _gif->pUser = pUser;
         if (_gif->iError == GIF_EMPTY_FRAME) // don't try to decode it
             return 0;
-        rc = DecodeLZW(_gif, 0);
+        rc = DecodeLZW(_gif.get(), 0);
         if (rc != 0) // problem
             return -1;
     }
