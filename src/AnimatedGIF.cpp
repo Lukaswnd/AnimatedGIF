@@ -175,7 +175,10 @@ void AnimatedGIF::reset()
 
 void AnimatedGIF::begin(unsigned char ucPaletteType)
 {
-    _gif = new GIFIMAGE();
+    //_gif = new GIFIMAGE();
+    _gif = (GIFIMAGE*) heap_caps_malloc(sizeof(GIFIMAGE), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if(_gif == nullptr)
+	    _gif = (GIFIMAGE*) heap_caps_malloc(sizeof(GIFIMAGE), MALLOC_CAP_8BIT);
     memset(_gif, 0, sizeof(GIFIMAGE));
     if (ucPaletteType != GIF_PALETTE_RGB565_LE && ucPaletteType != GIF_PALETTE_RGB565_BE && ucPaletteType != GIF_PALETTE_RGB888)
         _gif->iError = GIF_INVALID_PARAMETER;
