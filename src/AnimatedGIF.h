@@ -196,7 +196,7 @@ class AnimatedGIF
     int getComment(char *destBuffer);
 
   private:
-    GIFIMAGE _gif;
+    GIFIMAGE* _gif;
 };
 #else
 // C interface
