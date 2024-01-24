@@ -165,6 +165,8 @@ void AnimatedGIF::close()
 {
     if (_gif->pfnClose)
         (*_gif->pfnClose)(_gif->GIFFile.fHandle);
+
+    free(_gif);
 } /* close() */
 
 void AnimatedGIF::reset()
