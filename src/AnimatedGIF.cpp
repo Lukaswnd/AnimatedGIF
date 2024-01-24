@@ -60,9 +60,9 @@ int AnimatedGIF::getComment(char *pDest)
 int32_t iOldPos;
 
     iOldPos = _gif->GIFFile.iPos; // keep old position
-    (*_gif->pfnSeek)(_gif->GIFFile, _gif->iCommentPos);
-    (*_gif->pfnRead)(_gif->GIFFile, (uint8_t *)pDest, _gif->sCommentLen);
-    (*_gif->pfnSeek)(_gif->GIFFile, iOldPos);
+    (*_gif->pfnSeek)(&_gif->GIFFile, _gif->iCommentPos);
+    (*_gif->pfnRead)(&_gif->GIFFile, (uint8_t *)pDest, _gif->sCommentLen);
+    (*_gif->pfnSeek)(&_gif->GIFFile, iOldPos);
     pDest[_gif->sCommentLen] = 0; // zero terminate the string
     return (int)_gif->sCommentLen;
 } /* getComment() */
@@ -152,7 +152,7 @@ int AnimatedGIF::open(const char *szFilename, GIF_OPEN_CALLBACK *pfnOpen, GIF_CL
     _gif->pfnDraw = pfnDraw;
     _gif->pfnOpen = pfnOpen;
     _gif->pfnClose = pfnClose;
-    _gif->GIFFile.fHandle = (*pfnOpen)(szFilename, _gif->GIFFile.iSize);
+    _gif->GIFFile.fHandle = (*pfnOpen)(szFilename, &_gif->GIFFile.iSize);
     if (_gif->GIFFile.fHandle == NULL) {
        _gif->iError = GIF_FILE_NOT_OPEN;
        return 0;
@@ -170,7 +170,7 @@ void AnimatedGIF::close()
 void AnimatedGIF::reset()
 {
     _gif->iError = GIF_SUCCESS;
-    (*_gif->pfnSeek)(_gif->GIFFile, 0);
+    (*_gif->pfnSeek)(&_gif->GIFFile, 0);
 } /* reset() */
 
 void AnimatedGIF::begin(unsigned char ucPaletteType)
@@ -198,7 +198,7 @@ long lTime = millis();
 
     if (_gif->GIFFile.iPos >= _gif->GIFFile.iSize-1) // no more data exists
     {
-        (*_gif->pfnSeek)(_gif->GIFFile, 0); // seek to start
+        (*_gif->pfnSeek)(&_gif->GIFFile, 0); // seek to start
     }
     if (GIFParseInfo(_gif, 0))
     {
