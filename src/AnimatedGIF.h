@@ -12,6 +12,9 @@
 
 #ifndef __ANIMATEDGIF__
 #define __ANIMATEDGIF__
+
+#include <memory>
+
 #if defined( PICO_BUILD ) || defined( __MACH__ ) || defined( __LINUX__ ) || defined( __MCUXPRESSO )
 #include <stdio.h>
 #include <stdint.h>
@@ -22,6 +25,7 @@
 #else
 #include <Arduino.h>
 #endif
+
 //
 // GIF Animator
 // Written by Larry Bank
@@ -196,7 +200,7 @@ class AnimatedGIF
     int getComment(char *destBuffer);
 
   private:
-    GIFIMAGE* _gif;
+    std::shared_ptr<GIFIMAGE> _gif;
 };
 #else
 // C interface
